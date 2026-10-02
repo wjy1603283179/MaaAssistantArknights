@@ -575,6 +575,12 @@ Bilibili：`张三`、入力可能：`张三`、`张`、`三`
 @optional
 手がかりを譲り渡すかどうか。  
 :::  
+::: field reception_clue_recipient
+@type string
+@default ""
+@optional
+贈り先の完全なゲーム内の名前（例：`ドクター#1234`）。既定では空欄で、従来の贈呈方法を使用します。指定した場合はその戦友にのみ贈り、一括贈呈は使用しません。相手が見つからない、名前を正確に認識できない、または贈呈できない場合はスキップし、別の戦友には贈りません。`reception_send_clue` が `true` の場合のみ有効です。名前には `#` とその後の4桁の数字が必要です。
+:::
 ::: field filename  
 @type string
 @required
@@ -613,6 +619,7 @@ Bilibili：`张三`、入力可能：`张三`、`张`、`三`
    "reception_message_board": true,
    "reception_clue_exchange": true,
    "reception_send_clue": true,
+   "reception_clue_recipient": "",
    "filename": "schedules/base.json",
    "plan_index": 1
 }

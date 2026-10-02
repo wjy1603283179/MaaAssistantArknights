@@ -4011,6 +4011,104 @@
             "ClueGiveTo1stConfirm"
         ]
     },
+    "InfrastClueSendToNamedRecipient": {
+        "baseTask": "SendClues",
+        "template": "SendClues.png",
+        "Doc": "指定完整玩家名称赠送线索，不使用快捷赠送，也不回退到其他好友。",
+        "maxTimes": 3,
+        "exceededNext": ["ReceptionFlag"],
+        "next": ["InfrastClueSelectForRecipient", "InfrastClueCloseRecipient"]
+    },
+    "InfrastClueSelectForRecipient": {
+        "baseTask": "SelectClue",
+        "template": "SelectClue.png",
+        "exceededNext": ["InfrastClueCloseRecipient"],
+        "next": ["InfrastClueSelectedForRecipient", "InfrastClueSelectForRecipient"]
+    },
+    "InfrastClueSelectedForRecipient": {
+        "baseTask": "ClueSelected",
+        "template": "ClueSelected.png",
+        "reduceOtherTimes": ["InfrastClueSelectForRecipient*3"],
+        "exceededNext": ["InfrastClueCloseRecipient"],
+        "next": ["InfrastClueFindRecipient"]
+    },
+    "InfrastClueFindRecipient": {
+        "algorithm": "JustReturn",
+        "Doc": "插件逐行精确匹配姓名，仅唯一命中时覆盖 next 为对应行的发送按钮。",
+        "maxTimes": 151,
+        "exceededNext": ["InfrastClueCloseRecipient"],
+        "next": ["InfrastClueRecipientNextPage", "InfrastClueCloseRecipient"]
+    },
+    "InfrastClueRecipientNextPage": {
+        "baseTask": "ClueGiveToNextPage",
+        "template": "ClueGiveToNextPage.png",
+        "maxTimes": 150,
+        "postDelay": 500,
+        "exceededNext": ["InfrastClueCloseRecipient"],
+        "next": ["InfrastClueFindRecipient"]
+    },
+    "InfrastClueCloseRecipient": {
+        "baseTask": "CloseSendClue",
+        "template": "CloseSendClue.png"
+    },
+    "InfrastClueCloseAfterRecipientSend": {
+        "baseTask": "CloseSendClue",
+        "template": "CloseSendClue.png",
+        "Doc": "每次发送后重新打开赠送页面，从第一页核对下一次的目标。",
+        "next": ["InfrastClueSendToNamedRecipient", "ReceptionFlag", "InfrastClueCloseAfterRecipientSend"]
+    },
+    "InfrastClueSendToRecipient1": {
+        "baseTask": "ClueGiveTo1stConfirm",
+        "template": "SendClueConfirm.png",
+        "next": ["InfrastClueSendToRecipient1@LoadingText", "InfrastClueCloseAfterRecipientSend"]
+    },
+    "InfrastClueRecipientName1": {
+        "algorithm": "OcrDetect",
+        "text": [],
+        "fullMatch": true,
+        "withoutDet": true,
+        "roi": [588, 76, 250, 42],
+        "Doc": "读取完整昵称#四位编号，由插件进行字面量精确比较，不应用 OCR 等价类或模糊匹配。"
+    },
+    "InfrastClueSendToRecipient2": {
+        "baseTask": "ClueGiveTo2ndConfirm",
+        "template": "SendClueConfirm.png",
+        "next": ["InfrastClueSendToRecipient2@LoadingText", "InfrastClueCloseAfterRecipientSend"]
+    },
+    "InfrastClueRecipientName2": {
+        "algorithm": "OcrDetect",
+        "text": [],
+        "fullMatch": true,
+        "withoutDet": true,
+        "roi": [588, 226, 250, 42],
+        "Doc": "读取完整昵称#四位编号，由插件进行字面量精确比较，不应用 OCR 等价类或模糊匹配。"
+    },
+    "InfrastClueSendToRecipient3": {
+        "baseTask": "ClueGiveTo3rdConfirm",
+        "template": "SendClueConfirm.png",
+        "next": ["InfrastClueSendToRecipient3@LoadingText", "InfrastClueCloseAfterRecipientSend"]
+    },
+    "InfrastClueRecipientName3": {
+        "algorithm": "OcrDetect",
+        "text": [],
+        "fullMatch": true,
+        "withoutDet": true,
+        "roi": [588, 376, 250, 42],
+        "Doc": "读取完整昵称#四位编号，由插件进行字面量精确比较，不应用 OCR 等价类或模糊匹配。"
+    },
+    "InfrastClueSendToRecipient4": {
+        "baseTask": "ClueGiveTo4thConfirm",
+        "template": "SendClueConfirm.png",
+        "next": ["InfrastClueSendToRecipient4@LoadingText", "InfrastClueCloseAfterRecipientSend"]
+    },
+    "InfrastClueRecipientName4": {
+        "algorithm": "OcrDetect",
+        "text": [],
+        "fullMatch": true,
+        "withoutDet": true,
+        "roi": [588, 526, 250, 42],
+        "Doc": "读取完整昵称#四位编号，由插件进行字面量精确比较，不应用 OCR 等价类或模糊匹配。"
+    },
     "InfrastTrainingIdle": {
         "algorithm": "OcrDetect",
         "text": ["空闲中"],

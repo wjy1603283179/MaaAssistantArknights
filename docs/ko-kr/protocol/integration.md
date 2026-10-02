@@ -561,6 +561,12 @@ Yituliu 전송 ID, 기본값 비어 있음. `report_to_yituliu`가 true일 때�
 @optional
 단서 보내기 여부  
 :::  
+::: field reception_clue_recipient
+@type string
+@default ""
+@optional
+단서 수신 친구의 전체 게임 내 이름입니다. 예: `닥터#1234`. 기본값은 빈 문자열이며 기존 전달 방식을 유지합니다. 이름을 지정하면 해당 친구에게만 전달하며 일괄 전달은 사용하지 않습니다. 대상을 찾거나 이름을 정확히 인식할 수 없거나 전달할 수 없으면 건너뛰고 다른 친구에게 전달하지 않습니다. `reception_send_clue`가 `true`일 때만 적용됩니다. 이름에는 `#` 뒤에 네 자리 숫자가 포함되어야 합니다.
+:::
 ::: field filename  
 @type string
 @required
@@ -599,6 +605,7 @@ Yituliu 전송 ID, 기본값 비어 있음. `report_to_yituliu`가 true일 때�
    "reception_message_board": true,
    "reception_clue_exchange": true,
    "reception_send_clue": true,
+   "reception_clue_recipient": "",
    "filename": "schedules/base.json",
    "plan_index": 1
 }

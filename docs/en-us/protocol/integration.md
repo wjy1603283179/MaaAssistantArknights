@@ -575,6 +575,12 @@ Whether to perform clue exchange.
 @optional
 Whether to send clues.  
 :::  
+::: field reception_clue_recipient
+@type string
+@default ""
+@optional
+Full in-game name of the clue recipient, for example `Doctor#1234`. Empty by default, preserving the existing gifting strategy. When set, only this friend receives clues and bulk gifting is disabled. Skip if the recipient cannot be found, recognized exactly, or sent a clue; never fall back to another friend. Only effective when `reception_send_clue` is `true`. The name must include `#` followed by four digits.
+:::
 ::: field filename  
 @type string
 @required
@@ -613,6 +619,7 @@ Whether to continue unfinished skill training in the Training Room.
    "reception_message_board": true,
    "reception_clue_exchange": true,
    "reception_send_clue": true,
+   "reception_clue_recipient": "",
    "filename": "schedules/base.json",
    "plan_index": 1
 }

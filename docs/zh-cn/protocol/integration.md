@@ -575,6 +575,12 @@ Tag 等级（大于等于 3）和对应的希望招募时限，单位为分钟�
 @optional
 是否赠送线索。  
 :::  
+::: field reception_clue_recipient
+@type string
+@default ""
+@optional
+线索接收好友的完整游戏名称，如 `博士#1234`。默认为空，使用原有赠送策略。非空时只向该好友赠送，不使用一键赠送；找不到、无法精确识别或无法接收时跳过，不回退到其他好友。仅在 `reception_send_clue` 为 `true` 时生效。名称必须包含 `#` 后四位数字。
+:::
 ::: field filename  
 @type string
 @required
@@ -613,6 +619,7 @@ Tag 等级（大于等于 3）和对应的希望招募时限，单位为分钟�
    "reception_message_board": true,
    "reception_clue_exchange": true,
    "reception_send_clue": true,
+   "reception_clue_recipient": "",
    "filename": "schedules/base.json",
    "plan_index": 1
 }
