@@ -4014,8 +4014,8 @@
     "InfrastClueSendToNamedRecipient": {
         "baseTask": "SendClues",
         "template": "SendClues.png",
-        "Doc": "指定完整玩家名称赠送线索，不使用快捷赠送，也不回退到其他好友。",
-        "maxTimes": 3,
+        "Doc": "只向指定好友逐张赠送自有线索；库存上限为 10，允许发送后多打开一次检查库存耗尽。",
+        "maxTimes": 11,
         "exceededNext": ["ReceptionFlag"],
         "next": ["InfrastClueSelectForRecipient", "InfrastClueCloseRecipient"]
     },
@@ -4028,7 +4028,12 @@
     "InfrastClueSelectedForRecipient": {
         "baseTask": "ClueSelected",
         "template": "ClueSelected.png",
-        "reduceOtherTimes": ["InfrastClueSelectForRecipient*3"],
+        "maxTimes": 10,
+        "reduceOtherTimes": [
+            "InfrastClueSelectForRecipient*3",
+            "InfrastClueFindRecipient*151",
+            "InfrastClueRecipientNextPage*150"
+        ],
         "exceededNext": ["InfrastClueCloseRecipient"],
         "next": ["InfrastClueFindRecipient"]
     },

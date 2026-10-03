@@ -579,7 +579,7 @@ Whether to send clues.
 @type string
 @default ""
 @optional
-Full in-game name of the clue recipient, for example `Doctor#1234`. Empty by default, preserving the existing gifting strategy. When set, only this friend receives clues and bulk gifting is disabled. Skip if the recipient cannot be found, recognized exactly, or sent a clue; never fall back to another friend. Only effective when `reception_send_clue` is `true`. The name must include `#` followed by four digits.
+Full in-game name of the clue recipient, for example `Doctor#1234`. Empty by default, preserving the existing gifting strategy. When set, clues are sent one at a time only to this friend until the currently giftable self-owned clues run out, without bulk gifting. Stop if the recipient cannot be found, recognized exactly, or sent a clue; never fall back to another friend. Only effective when `reception_send_clue` is `true`. The name must include `#` followed by four digits.
 :::
 ::: field filename  
 @type string
