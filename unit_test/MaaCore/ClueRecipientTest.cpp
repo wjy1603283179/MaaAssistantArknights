@@ -26,13 +26,13 @@ TEST_CASE("Unreadable target rows cannot count as a complete unsuccessful search
 
 TEST_CASE("Only reliably different nicknames exclude an incomplete clue recipient", "[clue-recipient]")
 {
-    using asst::infrast::has_other_clue_recipient_nickname;
-    REQUIRE(has_other_clue_recipient_nickname("Other#12O", "DoctorLong#5678"));
-    REQUIRE_FALSE(has_other_clue_recipient_nickname("DoctorLong#567", "DoctorLong#5678"));
-    REQUIRE_FALSE(has_other_clue_recipient_nickname("Doctor#5678", "DoctorLong#5678"));
-    REQUIRE_FALSE(has_other_clue_recipient_nickname("DoctorLongk#5678", "DoctorLong#5678"));
-    REQUIRE_FALSE(has_other_clue_recipient_nickname("DoctorLong", "DoctorLong#5678"));
-    REQUIRE_FALSE(has_other_clue_recipient_nickname("#5678", "DoctorLong#5678"));
+    using asst::infrast::can_exclude_clue_recipient;
+    REQUIRE(can_exclude_clue_recipient("Other#12O", "DoctorLong#5678"));
+    REQUIRE_FALSE(can_exclude_clue_recipient("DoctorLong#567", "DoctorLong#5678"));
+    REQUIRE_FALSE(can_exclude_clue_recipient("Doctor#5678", "DoctorLong#5678"));
+    REQUIRE_FALSE(can_exclude_clue_recipient("DoctorLongk#5678", "DoctorLong#5678"));
+    REQUIRE_FALSE(can_exclude_clue_recipient("DoctorLong", "DoctorLong#5678"));
+    REQUIRE_FALSE(can_exclude_clue_recipient("#5678", "DoctorLong#5678"));
 }
 
 TEST_CASE("Complete discriminators distinguish friends with the same nickname", "[clue-recipient]")
@@ -140,20 +140,6 @@ TEST_CASE("Clue recipient fallback does not carry over to a new search instance"
     asst::infrast::ClueRecipientSearchAttempts next;
     REQUIRE(next.record_not_found() == Action::Retry);
     REQUIRE(next.not_found_count() == 1);
-}
-
-TEST_CASE("Clue recipient searches stop when pagination wraps around", "[clue-recipient]")
-{
-    asst::infrast::ClueRecipientPageTracker pages;
-    const std::array<std::string, 4> first { "Doctor#1234", "", "", "" };
-    const std::array<std::string, 4> second { "Doctor#4321", "", "", "" };
-    REQUIRE(pages.visit(first));
-    REQUIRE(pages.visit(second));
-    REQUIRE_FALSE(pages.visit(first));
-    REQUIRE_FALSE(pages.visit(second));
-    pages.reset();
-    REQUIRE(pages.visit(first));
-    REQUIRE_FALSE(pages.visit(first));
 }
 
 TEST_CASE("Only recipient send buttons trigger the pre-send guard", "[clue-recipient]")

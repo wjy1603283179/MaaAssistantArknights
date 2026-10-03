@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <set>
 #include <string>
 
 #include "ClueRecipient.h"
@@ -28,7 +29,7 @@ private:
     bool on_recipient_not_found(ProcessTask& task);
 
     std::string m_recipient;
-    infrast::ClueRecipientPageTracker m_pages;
+    std::set<std::array<std::string, 4>> m_seen_pages;
     infrast::ClueRecipientSearchAttempts m_search_attempts;
     bool m_search_started = false;
     bool m_recipient_unavailable = false;

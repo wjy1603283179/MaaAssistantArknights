@@ -124,7 +124,7 @@ bool asst::InfrastClueRecipientTaskPlugin::_run()
         return true;
     }
     if (task_name == "InfrastClueSelectForRecipient") {
-        m_pages.reset();
+        m_seen_pages.clear();
         return true;
     }
     if (task_name == "InfrastClueCloseRecipient") {
@@ -159,7 +159,7 @@ bool asst::InfrastClueRecipientTaskPlugin::_run()
         m_recipient_unavailable = true;
         LogWarn << __FUNCTION__ << "Clue recipient names are ambiguous or unreadable; skipping" << m_recipient;
     }
-    else if (!m_pages.visit(page.page_keys)) {
+    else if (!m_seen_pages.insert(page.page_keys).second) {
         // 重复页可能来自翻页无进展或不完整编号碰撞，不能据此证明完整查找未命中。
         next = { "InfrastClueCloseRecipient" };
     }

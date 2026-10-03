@@ -4114,12 +4114,8 @@
         "next": ["InfrastClueSendToRecipient2@LoadingText", "InfrastClueCloseAfterRecipientSend"]
     },
     "InfrastClueRecipientName2": {
-        "algorithm": "OcrDetect",
-        "text": [],
-        "fullMatch": true,
-        "withoutDet": false,
-        "roi": [588, 226, 320, 42],
-        "Doc": "检测昵称及完整名称，避免把名片背景直接作为整行文字识别；缺少编号时单独识别相邻编号。"
+        "baseTask": "InfrastClueRecipientName1",
+        "roi": [588, 226, 320, 42]
     },
     "InfrastClueRecipientRow2": {
         "baseTask": "InfrastClueRecipientRow1",
@@ -4132,12 +4128,8 @@
         "next": ["InfrastClueSendToRecipient3@LoadingText", "InfrastClueCloseAfterRecipientSend"]
     },
     "InfrastClueRecipientName3": {
-        "algorithm": "OcrDetect",
-        "text": [],
-        "fullMatch": true,
-        "withoutDet": false,
-        "roi": [588, 376, 320, 42],
-        "Doc": "检测昵称及完整名称，避免把名片背景直接作为整行文字识别；缺少编号时单独识别相邻编号。"
+        "baseTask": "InfrastClueRecipientName1",
+        "roi": [588, 376, 320, 42]
     },
     "InfrastClueRecipientRow3": {
         "baseTask": "InfrastClueRecipientRow1",
@@ -4150,12 +4142,8 @@
         "next": ["InfrastClueSendToRecipient4@LoadingText", "InfrastClueCloseAfterRecipientSend"]
     },
     "InfrastClueRecipientName4": {
-        "algorithm": "OcrDetect",
-        "text": [],
-        "fullMatch": true,
-        "withoutDet": false,
-        "roi": [588, 526, 320, 42],
-        "Doc": "检测昵称及完整名称，避免把名片背景直接作为整行文字识别；缺少编号时单独识别相邻编号。"
+        "baseTask": "InfrastClueRecipientName1",
+        "roi": [588, 526, 320, 42]
     },
     "InfrastClueRecipientRow4": {
         "baseTask": "InfrastClueRecipientRow1",

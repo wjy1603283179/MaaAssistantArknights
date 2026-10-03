@@ -176,7 +176,7 @@
     <system:String x:Key="ClueExchangeUnlocked">단서 공유 개방</system:String>
     <system:String x:Key="InfrastReceptionSendClue">단서 전달</system:String>
     <system:String x:Key="InfrastClueRecipient">단서 수신 친구</system:String>
-    <system:String x:Key="InfrastClueRecipientTip" xml:space="preserve">게임에 표시된 전체 이름을 입력하세요. 예: 닥터#1234.&#10;비워 두면 기본 방식을 사용합니다. 지정하면 먼저 해당 친구에게 하나씩 전달합니다.&#10;전체 목록을 두 번 연속 검색해도 대상을 찾지 못하면 이번 작업은 기본 방식으로 전환하며 다른 친구에게 전달하거나 일괄 전달할 수 있습니다.&#10;저장된 이름은 유지되며 다음 작업에서 다시 검색합니다.&#10;대상을 찾지 못했고 해당 페이지에 대상이 없다고 확실히 판단할 수 없거나 중복으로 인식하거나 대상이 단서를 받을 수 없으면 기본 방식으로 전환하지 않고 건너뜁니다.</system:String>
+    <system:String x:Key="InfrastClueRecipientTip" xml:space="preserve">부계정에서 본계정으로 단서를 보내려면 본계정의 전체 게임 이름을 입력하세요. 예: 닥터#1234.&#10;비워 두면 기본 방식으로 전달합니다.&#10;전체 목록을 두 번 연속 검색해도 찾지 못하면 이번 작업은 기본 방식으로 전환하여 다른 친구에게 전달할 수 있습니다.&#10;다음 작업에서는 저장된 이름을 다시 검색합니다.</system:String>
     <system:String x:Key="InfrastClueRecipientFormatError">단서 수신 친구의 전체 이름(닉네임#네 자리 번호)을 입력하세요. 예: 닥터#1234.</system:String>
     <system:String x:Key="ReceptionOptionsRequireInfrast">다음 기능들은 {key=Infrast}에서 설정 및 실행해야 합니다</system:String>
     <system:String x:Key="ContinueTraining">마스터리 훈련 완료 시 이어서 시도</system:String>

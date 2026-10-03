@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <array>
 #include <optional>
-#include <set>
 #include <span>
 #include <string>
 #include <string_view>
@@ -78,18 +77,6 @@ struct ClueRecipientPage
     bool operator==(const ClueRecipientPage&) const = default;
 };
 
-inline bool has_other_clue_recipient_nickname(std::string_view name, std::string_view recipient)
-{
-    const auto separator = name.rfind('#');
-    if (separator == std::string_view::npos || separator == 0) {
-        return false;
-    }
-    const auto nickname = name.substr(0, separator);
-    const auto expected = recipient.substr(0, recipient.rfind('#'));
-    // 仅用于排除目标；疑似截断或附带文字仍保留不确定性，不参与正向匹配。
-    return !nickname.starts_with(expected) && !expected.starts_with(nickname);
-}
-
 class ClueRecipientSearchAttempts
 {
 public:
@@ -114,17 +101,6 @@ private:
     unsigned m_not_found_count = 0;
 };
 
-class ClueRecipientPageTracker
-{
-public:
-    bool visit(const std::array<std::string, 4>& names) { return m_seen.insert(names).second; }
-
-    void reset() { m_seen.clear(); }
-
-private:
-    std::set<std::array<std::string, 4>> m_seen;
-};
-
 inline std::optional<size_t> clue_recipient_send_row(std::string_view task)
 {
     constexpr std::string_view prefix = "InfrastClueSendToRecipient";
@@ -147,10 +123,15 @@ inline bool can_exclude_clue_recipient(std::string_view name, std::string_view r
     if (name == recipient || !is_valid_clue_recipient(recipient)) {
         return false;
     }
-    const auto nickname = name.substr(0, name.rfind('#'));
+    const auto separator = name.rfind('#');
+    if (separator == std::string_view::npos || separator == 0) {
+        return false;
+    }
+    const auto nickname = name.substr(0, separator);
     const auto expected = recipient.substr(0, recipient.rfind('#'));
+    // 仅用于排除目标；疑似截断或附带文字仍保留不确定性，不参与正向匹配。
     return (nickname == expected && is_valid_clue_recipient(name)) ||
-           has_other_clue_recipient_nickname(name, recipient);
+           (!nickname.starts_with(expected) && !expected.starts_with(nickname));
 }
 
 inline std::optional<size_t> find_clue_recipient(std::span<const std::string> names, std::string_view recipient)
