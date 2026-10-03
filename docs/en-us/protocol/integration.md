@@ -579,7 +579,7 @@ Whether to send clues.
 @type string
 @default ""
 @optional
-Full in-game name of the clue recipient, for example `Doctor#1234`. Empty by default, preserving the existing gifting strategy. When set, clues are sent one at a time only to this friend until the currently giftable self-owned clues run out, without bulk gifting. Stop if the recipient cannot be found, recognized exactly, or sent a clue; never fall back to another friend. Only effective when `reception_send_clue` is `true`. The name must include `#` followed by four digits.
+Full in-game name of the clue recipient, for example `Doctor#1234`. Empty by default, preserving the existing gifting strategy. When set, first send clues one at a time to this friend until the currently giftable self-owned clues run out. After a complete search fails, retry once from the first page. Two consecutive searches without a match switch this Reception task to the original strategy as if the value were empty, which may send to other friends or use bulk gifting. Fallback does not change the configuration: the next task searches again, and finding the recipient resets the failure count. Unreadable or duplicate names, inability to receive clues, or a failed pre-send check skip gifting without fallback; no giftable clues does not count as a failure. Only effective when `reception_send_clue` is `true`. The name must include `#` followed by four digits.
 :::
 ::: field filename  
 @type string

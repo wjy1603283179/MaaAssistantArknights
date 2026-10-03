@@ -16,7 +16,10 @@
 bool asst::InfrastReceptionTask::_run()
 {
     m_all_available_opers.clear();
-    m_clue_recipient_unavailable = false;
+    if (m_cur_retry == 0) {
+        m_clue_recipient_unavailable = false;
+        m_clue_recipient_fallback = false;
+    }
 
     swipe_to_the_left_of_main_ui();
 
@@ -317,14 +320,15 @@ bool asst::InfrastReceptionTask::back_to_reception_main()
 
 bool asst::InfrastReceptionTask::send_clue()
 {
-    return run_clue_task({ m_clue_recipient.empty() ? "SendClues" : "InfrastClueSendToNamedRecipient" });
+    return run_clue_task(
+        { m_clue_recipient.empty() || m_clue_recipient_fallback ? "SendClues" : "InfrastClueSendToNamedRecipient" });
 }
 
 bool asst::InfrastReceptionTask::run_clue_task(std::vector<std::string> tasks)
 {
     ProcessTask task(*this, std::move(tasks));
     std::shared_ptr<InfrastClueRecipientTaskPlugin> plugin;
-    if (!m_clue_recipient.empty()) {
+    if (!m_clue_recipient.empty() && !m_clue_recipient_fallback) {
         plugin = task.register_plugin<InfrastClueRecipientTaskPlugin>();
         plugin->set_recipient(m_clue_recipient);
         plugin->set_retry_times(0);
@@ -337,6 +341,9 @@ bool asst::InfrastReceptionTask::run_clue_task(std::vector<std::string> tasks)
     const bool result = task.set_retry_times(ProcessTask::RetryTimesDefault).run();
     if (plugin && plugin->is_recipient_unavailable()) {
         m_clue_recipient_unavailable = true;
+    }
+    if (plugin && plugin->is_using_default_strategy()) {
+        m_clue_recipient_fallback = true;
     }
     if (!task.get_enable() && !need_exit()) {
         // 校验失败时插件会停用发送流程，关闭页面后仍允许继续换班。

@@ -47,5 +47,6 @@ private:
     bool m_send_clue = true;
     std::string m_clue_recipient;
     bool m_clue_recipient_unavailable = false;
+    bool m_clue_recipient_fallback = false;
 };
 }

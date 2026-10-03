@@ -10,6 +10,30 @@
 
 namespace asst::infrast
 {
+class ClueRecipientSearchAttempts
+{
+public:
+    enum class Action
+    {
+        Retry,
+        UseDefault,
+    };
+
+    Action record_not_found() noexcept
+    {
+        m_not_found_count = std::min(m_not_found_count + 1, MaxNotFoundCount);
+        return m_not_found_count < MaxNotFoundCount ? Action::Retry : Action::UseDefault;
+    }
+
+    void reset() noexcept { m_not_found_count = 0; }
+
+    unsigned not_found_count() const noexcept { return m_not_found_count; }
+
+private:
+    static constexpr unsigned MaxNotFoundCount = 2;
+    unsigned m_not_found_count = 0;
+};
+
 class ClueRecipientPageTracker
 {
 public:

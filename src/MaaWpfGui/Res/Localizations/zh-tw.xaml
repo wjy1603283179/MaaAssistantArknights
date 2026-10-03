@@ -176,7 +176,7 @@
     <system:String x:Key="ClueExchangeUnlocked">已開啟線索交流</system:String>
     <system:String x:Key="InfrastReceptionSendClue">贈送線索</system:String>
     <system:String x:Key="InfrastClueRecipient">線索接收好友</system:String>
-    <system:String x:Key="InfrastClueRecipientTip" xml:space="preserve">填寫遊戲顯示的完整名稱，例如 博士#1234。&#10;留空使用預設贈送策略；填寫後只送給該好友，不使用一鍵贈送。&#10;找不到目標、無法辨識名稱或無法贈送時跳過。</system:String>
+    <system:String x:Key="InfrastClueRecipientTip" xml:space="preserve">填寫遊戲顯示的完整名稱，例如 博士#1234。&#10;留空使用預設贈送策略；填寫後先向該好友逐張贈送。&#10;連續兩次完整查找仍找不到時，本次任務改用預設策略，可能送給其他好友或使用一鍵贈送。&#10;儲存的名稱不會清空，下次任務重新查找。&#10;姓名無法辨識、重複命中或目標無法接收時跳過，不觸發回退。</system:String>
     <system:String x:Key="InfrastClueRecipientFormatError">線索接收好友須填寫完整名稱（暱稱#四位編號），例如 博士#1234。</system:String>
     <system:String x:Key="ReceptionOptionsRequireInfrast">以下功能需在{key=Infrast}中設定並執行</system:String>
     <system:String x:Key="ContinueTraining">訓練完成後繼續嘗試專精目前技能</system:String>

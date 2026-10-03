@@ -5,6 +5,41 @@
 
 #include "Task/Infrast/ClueRecipient.h"
 
+TEST_CASE("Clue recipients use the default strategy only after two failed searches", "[clue-recipient]")
+{
+    asst::infrast::ClueRecipientSearchAttempts attempts;
+    using Action = asst::infrast::ClueRecipientSearchAttempts::Action;
+    REQUIRE(attempts.record_not_found() == Action::Retry);
+    REQUIRE(attempts.not_found_count() == 1);
+    REQUIRE(attempts.record_not_found() == Action::UseDefault);
+    REQUIRE(attempts.not_found_count() == 2);
+    REQUIRE(attempts.record_not_found() == Action::UseDefault);
+    REQUIRE(attempts.not_found_count() == 2);
+}
+
+TEST_CASE("Finding the clue recipient resets consecutive failed searches", "[clue-recipient]")
+{
+    asst::infrast::ClueRecipientSearchAttempts attempts;
+    using Action = asst::infrast::ClueRecipientSearchAttempts::Action;
+    REQUIRE(attempts.record_not_found() == Action::Retry);
+    attempts.reset();
+    REQUIRE(attempts.not_found_count() == 0);
+    REQUIRE(attempts.record_not_found() == Action::Retry);
+    REQUIRE(attempts.not_found_count() == 1);
+    REQUIRE(attempts.record_not_found() == Action::UseDefault);
+}
+
+TEST_CASE("Clue recipient fallback does not carry over to a new search instance", "[clue-recipient]")
+{
+    asst::infrast::ClueRecipientSearchAttempts previous;
+    using Action = asst::infrast::ClueRecipientSearchAttempts::Action;
+    REQUIRE(previous.record_not_found() == Action::Retry);
+    REQUIRE(previous.record_not_found() == Action::UseDefault);
+    asst::infrast::ClueRecipientSearchAttempts next;
+    REQUIRE(next.record_not_found() == Action::Retry);
+    REQUIRE(next.not_found_count() == 1);
+}
+
 TEST_CASE("Clue recipient searches stop when pagination wraps around", "[clue-recipient]")
 {
     asst::infrast::ClueRecipientPageTracker pages;

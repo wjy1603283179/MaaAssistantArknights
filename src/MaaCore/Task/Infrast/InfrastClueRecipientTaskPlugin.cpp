@@ -7,14 +7,15 @@
 
 bool asst::InfrastClueRecipientTaskPlugin::verify(AsstMsg msg, const json::value& details) const
 {
-    if (details.get("subtask", std::string()) != "ProcessTask") {
+    if (m_using_default_strategy || details.get("subtask", std::string()) != "ProcessTask") {
         return false;
     }
 
     const auto task = details.get("details", "task", std::string());
     return (msg == AsstMsg::SubTaskCompleted &&
             (task == "InfrastClueFindRecipient" || task == "InfrastClueSelectForRecipient" ||
-             task == "InfrastClueSendToNamedRecipient" || task == "InfrastClueCloseRecipient")) ||
+             task == "InfrastClueSendToNamedRecipient" || task == "InfrastClueCloseRecipient" ||
+             task == "InfrastClueRecipientNotFound" || task == "InfrastClueFallbackRecipient")) ||
            (msg == AsstMsg::SubTaskStart && infrast::clue_recipient_send_row(task).has_value());
 }
 
@@ -60,6 +61,17 @@ std::array<std::string, 4> asst::InfrastClueRecipientTaskPlugin::read_names(cons
     return names;
 }
 
+bool asst::InfrastClueRecipientTaskPlugin::on_recipient_not_found(ProcessTask& task)
+{
+    const auto action = m_search_attempts.record_not_found();
+    LogWarn << __FUNCTION__ << "Clue recipient not found:" << m_recipient << "attempt"
+            << m_search_attempts.not_found_count();
+    return task.override_next(
+        "InfrastClueRecipientNotFound",
+        { action == infrast::ClueRecipientSearchAttempts::Action::Retry ? "InfrastClueRetryRecipient"
+                                                                        : "InfrastClueFallbackRecipient" });
+}
+
 bool asst::InfrastClueRecipientTaskPlugin::_run()
 {
     LogTraceFunction;
@@ -70,6 +82,18 @@ bool asst::InfrastClueRecipientTaskPlugin::_run()
     }
 
     const auto& task_name = task->get_last_task_name();
+    if (task_name == "InfrastClueRecipientNotFound") {
+        return on_recipient_not_found(*task);
+    }
+    if (task_name == "InfrastClueFallbackRecipient") {
+        // 本次流程的满库存分支也须恢复原版逻辑，不修改保存的好友名称。
+        if (!task->remove_override_next("CloseCluePageThenSendClue")) {
+            return false;
+        }
+        m_using_default_strategy = true;
+        LogWarn << __FUNCTION__ << "Clue recipient search failed twice; using the default gifting strategy";
+        return true;
+    }
     if (task_name == "InfrastClueSendToNamedRecipient") {
         m_search_started = false;
         return true;
@@ -97,17 +121,19 @@ bool asst::InfrastClueRecipientTaskPlugin::_run()
 
     // 默认流程只允许翻页或退出；仅精确、唯一命中时才加入对应行的发送按钮。
     m_search_started = true;
-    std::vector<std::string> next { "InfrastClueRecipientNextPage", "InfrastClueCloseRecipient" };
+    std::vector<std::string> next { "InfrastClueRecipientNextPage", "InfrastClueRecipientNotFound" };
     if (row) {
+        m_search_attempts.reset();
         next = { "InfrastClueSendToRecipient" + std::to_string(*row + 1), "InfrastClueCloseRecipient" };
         LogInfo << __FUNCTION__ << "Clue recipient found:" << m_recipient << "row" << *row + 1;
     }
-    else if (
-        !m_pages.visit(names) || std::ranges::all_of(names, &std::string::empty) ||
-        std::ranges::count(names, m_recipient) > 1) {
+    else if (std::ranges::all_of(names, &std::string::empty) || std::ranges::count(names, m_recipient) > 1) {
         next = { "InfrastClueCloseRecipient" };
         m_recipient_unavailable = true;
-        LogWarn << __FUNCTION__ << "Clue recipient not found, ambiguous or unreadable; skipping" << m_recipient;
+        LogWarn << __FUNCTION__ << "Clue recipient names are ambiguous or unreadable; skipping" << m_recipient;
+    }
+    else if (!m_pages.visit(names)) {
+        next = { "InfrastClueRecipientNotFound" };
     }
     return task->override_next("InfrastClueFindRecipient", std::move(next));
 }

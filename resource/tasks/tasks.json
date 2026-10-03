@@ -4041,16 +4041,33 @@
         "algorithm": "JustReturn",
         "Doc": "插件逐行精确匹配姓名，仅唯一命中时覆盖 next 为对应行的发送按钮。",
         "maxTimes": 151,
-        "exceededNext": ["InfrastClueCloseRecipient"],
-        "next": ["InfrastClueRecipientNextPage", "InfrastClueCloseRecipient"]
+        "exceededNext": ["InfrastClueRecipientNotFound"],
+        "next": ["InfrastClueRecipientNextPage", "InfrastClueRecipientNotFound"]
     },
     "InfrastClueRecipientNextPage": {
         "baseTask": "ClueGiveToNextPage",
         "template": "ClueGiveToNextPage.png",
         "maxTimes": 150,
         "postDelay": 500,
-        "exceededNext": ["InfrastClueCloseRecipient"],
+        "exceededNext": ["InfrastClueRecipientNotFound"],
         "next": ["InfrastClueFindRecipient"]
+    },
+    "InfrastClueRecipientNotFound": {
+        "baseTask": "CloseSendClue",
+        "template": "CloseSendClue.png",
+        "Doc": "一次完整查找未命中时关闭页面；插件累计两次后切换本次任务为默认赠送，不清空配置。",
+        "next": ["InfrastClueRetryRecipient"]
+    },
+    "InfrastClueRetryRecipient": {
+        "algorithm": "JustReturn",
+        "Doc": "从第一页重试同一张线索，不消耗成功赠送的库存额度；选中线索时重置翻页次数。",
+        "reduceOtherTimes": ["InfrastClueSendToNamedRecipient", "InfrastClueSelectedForRecipient"],
+        "next": ["InfrastClueSendToNamedRecipient", "ReceptionFlag"]
+    },
+    "InfrastClueFallbackRecipient": {
+        "algorithm": "JustReturn",
+        "Doc": "两次未找到指定好友后执行名称留空的完整原版流程，可能赠送给其他好友。",
+        "next": ["SendClues", "ReceptionFlag"]
     },
     "InfrastClueCloseRecipient": {
         "baseTask": "CloseSendClue",
