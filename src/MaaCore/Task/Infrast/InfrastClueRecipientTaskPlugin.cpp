@@ -3,7 +3,7 @@
 #include "ClueRecipient.h"
 #include "Controller/Controller.h"
 #include "Utils/Logger.hpp"
-#include "Vision/RegionOCRer.h"
+#include "Vision/OCRer.h"
 
 bool asst::InfrastClueRecipientTaskPlugin::verify(AsstMsg msg, const json::value& details) const
 {
@@ -13,18 +13,48 @@ bool asst::InfrastClueRecipientTaskPlugin::verify(AsstMsg msg, const json::value
 
     const auto task = details.get("details", "task", std::string());
     return (msg == AsstMsg::SubTaskCompleted &&
-            (task == "InfrastClueFindRecipient" || task == "InfrastClueSelectForRecipient")) ||
+            (task == "InfrastClueFindRecipient" || task == "InfrastClueSelectForRecipient" ||
+             task == "InfrastClueSendToNamedRecipient" || task == "InfrastClueCloseRecipient")) ||
            (msg == AsstMsg::SubTaskStart && infrast::clue_recipient_send_row(task).has_value());
 }
 
 std::array<std::string, 4> asst::InfrastClueRecipientTaskPlugin::read_names(const cv::Mat& image) const
 {
     std::array<std::string, 4> names;
+    const auto nickname = m_recipient.substr(0, m_recipient.rfind('#'));
     for (size_t row = 0; row < names.size(); ++row) {
-        RegionOCRer analyzer(image);
+        OCRer analyzer(image);
         analyzer.set_task_info("InfrastClueRecipientName" + std::to_string(row + 1));
-        if (auto result = analyzer.analyze(); result && result->score >= 0.9) {
-            names[row] = std::move(result->text);
+        const auto results = analyzer.analyze();
+        if (!results) {
+            continue;
+        }
+        for (const auto& result : *results) {
+            if (result.score < 0.9) {
+                continue;
+            }
+            auto name = result.text;
+            if (name == nickname) {
+                // 昵称与编号可能被检测为分离文本；编号使用字符模型，避免名片背景干扰中文模型。
+                OCRer discriminator(image);
+                discriminator.set_task_info("InfrastClueRecipientDiscriminator");
+                discriminator.set_roi(
+                    { result.rect.x + result.rect.width + 4,
+                      result.rect.y - 2,
+                      result.rect.height * 4,
+                      result.rect.height + 4 });
+                if (auto tag = discriminator.analyze(); tag && tag->front().score >= 0.9) {
+                    name += tag->front().text;
+                }
+            }
+            if (!infrast::is_valid_clue_recipient(name)) {
+                continue;
+            }
+            if (!names[row].empty() && names[row] != name) {
+                names[row].clear();
+                break;
+            }
+            names[row] = std::move(name);
         }
     }
     return names;
@@ -40,8 +70,16 @@ bool asst::InfrastClueRecipientTaskPlugin::_run()
     }
 
     const auto& task_name = task->get_last_task_name();
+    if (task_name == "InfrastClueSendToNamedRecipient") {
+        m_search_started = false;
+        return true;
+    }
     if (task_name == "InfrastClueSelectForRecipient") {
-        m_previous_names = {};
+        m_pages.reset();
+        return true;
+    }
+    if (task_name == "InfrastClueCloseRecipient") {
+        m_recipient_unavailable |= m_search_started;
         return true;
     }
 
@@ -51,23 +89,25 @@ bool asst::InfrastClueRecipientTaskPlugin::_run()
         // 发送按钮匹配后再次读取姓名，避免翻页、重排或弹窗导致送给其他好友。
         if (!row || row != send_row) {
             LogWarn << __FUNCTION__ << "Clue recipient changed before sending; skipping" << m_recipient;
+            m_recipient_unavailable = true;
             task->set_enable(false);
         }
         return true;
     }
 
     // 默认流程只允许翻页或退出；仅精确、唯一命中时才加入对应行的发送按钮。
+    m_search_started = true;
     std::vector<std::string> next { "InfrastClueRecipientNextPage", "InfrastClueCloseRecipient" };
     if (row) {
         next = { "InfrastClueSendToRecipient" + std::to_string(*row + 1), "InfrastClueCloseRecipient" };
         LogInfo << __FUNCTION__ << "Clue recipient found:" << m_recipient << "row" << *row + 1;
     }
     else if (
-        names == m_previous_names || std::ranges::all_of(names, &std::string::empty) ||
+        !m_pages.visit(names) || std::ranges::all_of(names, &std::string::empty) ||
         std::ranges::count(names, m_recipient) > 1) {
         next = { "InfrastClueCloseRecipient" };
+        m_recipient_unavailable = true;
         LogWarn << __FUNCTION__ << "Clue recipient not found, ambiguous or unreadable; skipping" << m_recipient;
     }
-    m_previous_names = names;
     return task->override_next("InfrastClueFindRecipient", std::move(next));
 }

@@ -1,13 +1,26 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <optional>
+#include <set>
 #include <span>
 #include <string>
 #include <string_view>
 
 namespace asst::infrast
 {
+class ClueRecipientPageTracker
+{
+public:
+    bool visit(const std::array<std::string, 4>& names) { return m_seen.insert(names).second; }
+
+    void reset() { m_seen.clear(); }
+
+private:
+    std::set<std::array<std::string, 4>> m_seen;
+};
+
 inline std::optional<size_t> clue_recipient_send_row(std::string_view task)
 {
     constexpr std::string_view prefix = "InfrastClueSendToRecipient";

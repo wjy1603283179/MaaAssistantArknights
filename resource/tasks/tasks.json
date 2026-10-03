@@ -4066,9 +4066,9 @@
         "algorithm": "OcrDetect",
         "text": [],
         "fullMatch": true,
-        "withoutDet": true,
-        "roi": [588, 76, 250, 42],
-        "Doc": "读取完整昵称#四位编号，由插件进行字面量精确比较，不应用 OCR 等价类或模糊匹配。"
+        "withoutDet": false,
+        "roi": [588, 76, 320, 42],
+        "Doc": "检测昵称及完整名称，避免把名片背景直接作为整行文字识别；缺少编号时单独识别相邻编号。"
     },
     "InfrastClueSendToRecipient2": {
         "baseTask": "ClueGiveTo2ndConfirm",
@@ -4079,9 +4079,9 @@
         "algorithm": "OcrDetect",
         "text": [],
         "fullMatch": true,
-        "withoutDet": true,
-        "roi": [588, 226, 250, 42],
-        "Doc": "读取完整昵称#四位编号，由插件进行字面量精确比较，不应用 OCR 等价类或模糊匹配。"
+        "withoutDet": false,
+        "roi": [588, 226, 320, 42],
+        "Doc": "检测昵称及完整名称，避免把名片背景直接作为整行文字识别；缺少编号时单独识别相邻编号。"
     },
     "InfrastClueSendToRecipient3": {
         "baseTask": "ClueGiveTo3rdConfirm",
@@ -4092,9 +4092,9 @@
         "algorithm": "OcrDetect",
         "text": [],
         "fullMatch": true,
-        "withoutDet": true,
-        "roi": [588, 376, 250, 42],
-        "Doc": "读取完整昵称#四位编号，由插件进行字面量精确比较，不应用 OCR 等价类或模糊匹配。"
+        "withoutDet": false,
+        "roi": [588, 376, 320, 42],
+        "Doc": "检测昵称及完整名称，避免把名片背景直接作为整行文字识别；缺少编号时单独识别相邻编号。"
     },
     "InfrastClueSendToRecipient4": {
         "baseTask": "ClueGiveTo4thConfirm",
@@ -4105,9 +4105,17 @@
         "algorithm": "OcrDetect",
         "text": [],
         "fullMatch": true,
+        "withoutDet": false,
+        "roi": [588, 526, 320, 42],
+        "Doc": "检测昵称及完整名称，避免把名片背景直接作为整行文字识别；缺少编号时单独识别相邻编号。"
+    },
+    "InfrastClueRecipientDiscriminator": {
+        "algorithm": "OcrDetect",
+        "text": [],
+        "fullMatch": true,
         "withoutDet": true,
-        "roi": [588, 526, 250, 42],
-        "Doc": "读取完整昵称#四位编号，由插件进行字面量精确比较，不应用 OCR 等价类或模糊匹配。"
+        "isAscii": true,
+        "Doc": "使用字符模型读取昵称右侧的 #四位编号；插件根据昵称检测框指定 roi，不进行模糊替换。"
     },
     "InfrastTrainingIdle": {
         "algorithm": "OcrDetect",

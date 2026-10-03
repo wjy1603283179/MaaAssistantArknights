@@ -46,5 +46,6 @@ private:
     bool m_enable_clue_exchange = true;
     bool m_send_clue = true;
     std::string m_clue_recipient;
+    bool m_clue_recipient_unavailable = false;
 };
 }

@@ -5,6 +5,20 @@
 
 #include "Task/Infrast/ClueRecipient.h"
 
+TEST_CASE("Clue recipient searches stop when pagination wraps around", "[clue-recipient]")
+{
+    asst::infrast::ClueRecipientPageTracker pages;
+    const std::array<std::string, 4> first { "Doctor#1234", "", "", "" };
+    const std::array<std::string, 4> second { "Doctor#4321", "", "", "" };
+    REQUIRE(pages.visit(first));
+    REQUIRE(pages.visit(second));
+    REQUIRE_FALSE(pages.visit(first));
+    REQUIRE_FALSE(pages.visit(second));
+    pages.reset();
+    REQUIRE(pages.visit(first));
+    REQUIRE_FALSE(pages.visit(first));
+}
+
 TEST_CASE("Only recipient send buttons trigger the pre-send guard", "[clue-recipient]")
 {
     using asst::infrast::clue_recipient_send_row;
