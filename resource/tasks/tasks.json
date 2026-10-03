@@ -4039,9 +4039,9 @@
     },
     "InfrastClueFindRecipient": {
         "algorithm": "JustReturn",
-        "Doc": "插件逐行精确匹配姓名，仅唯一命中时覆盖 next 为对应行的发送按钮。",
+        "Doc": "插件逐行精确匹配姓名，仅唯一命中时覆盖 next 为对应行的发送按钮；达到页数保护上限时跳过，不计完整未命中。",
         "maxTimes": 151,
-        "exceededNext": ["InfrastClueRecipientNotFound"],
+        "exceededNext": ["InfrastClueCloseRecipient"],
         "next": ["InfrastClueRecipientNextPage", "InfrastClueRecipientNotFound"]
     },
     "InfrastClueRecipientNextPage": {
@@ -4049,7 +4049,7 @@
         "template": "ClueGiveToNextPage.png",
         "maxTimes": 150,
         "postDelay": 500,
-        "exceededNext": ["InfrastClueRecipientNotFound"],
+        "exceededNext": ["InfrastClueCloseRecipient"],
         "next": ["InfrastClueFindRecipient"]
     },
     "InfrastClueRecipientNotFound": {
@@ -4092,6 +4092,22 @@
         "roi": [588, 76, 320, 42],
         "Doc": "检测昵称及完整名称，避免把名片背景直接作为整行文字识别；缺少编号时单独识别相邻编号。"
     },
+    "InfrastClueRecipientRow1": {
+        "baseTask": "ClueGiveTo1stConfirm",
+        "template": "SendClueConfirm.png",
+        "Doc": "仅检测白色发送图标判断好友行是否存在；忽略可用与禁用按钮的背景，不执行点击。",
+        "action": "DoNothing",
+        "method": "RGBCount",
+        "colorScales": [
+            [
+                [160, 160, 160],
+                [255, 255, 255]
+            ]
+        ],
+        "pureColor": true,
+        "templThreshold": 0.75,
+        "next": []
+    },
     "InfrastClueSendToRecipient2": {
         "baseTask": "ClueGiveTo2ndConfirm",
         "template": "SendClueConfirm.png",
@@ -4104,6 +4120,11 @@
         "withoutDet": false,
         "roi": [588, 226, 320, 42],
         "Doc": "检测昵称及完整名称，避免把名片背景直接作为整行文字识别；缺少编号时单独识别相邻编号。"
+    },
+    "InfrastClueRecipientRow2": {
+        "baseTask": "InfrastClueRecipientRow1",
+        "template": "SendClueConfirm.png",
+        "roi": [1150, 200, 100, 160]
     },
     "InfrastClueSendToRecipient3": {
         "baseTask": "ClueGiveTo3rdConfirm",
@@ -4118,6 +4139,11 @@
         "roi": [588, 376, 320, 42],
         "Doc": "检测昵称及完整名称，避免把名片背景直接作为整行文字识别；缺少编号时单独识别相邻编号。"
     },
+    "InfrastClueRecipientRow3": {
+        "baseTask": "InfrastClueRecipientRow1",
+        "template": "SendClueConfirm.png",
+        "roi": [1150, 350, 100, 160]
+    },
     "InfrastClueSendToRecipient4": {
         "baseTask": "ClueGiveTo4thConfirm",
         "template": "SendClueConfirm.png",
@@ -4130,6 +4156,11 @@
         "withoutDet": false,
         "roi": [588, 526, 320, 42],
         "Doc": "检测昵称及完整名称，避免把名片背景直接作为整行文字识别；缺少编号时单独识别相邻编号。"
+    },
+    "InfrastClueRecipientRow4": {
+        "baseTask": "InfrastClueRecipientRow1",
+        "template": "SendClueConfirm.png",
+        "roi": [1150, 500, 100, 160]
     },
     "InfrastClueRecipientDiscriminator": {
         "algorithm": "OcrDetect",

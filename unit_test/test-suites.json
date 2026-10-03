@@ -24,6 +24,10 @@
         "src/MaaCore/Task/Infrast/ClueRecipient.h",
         "src/MaaCore/Task/Infrast/InfrastClueRecipientTaskPlugin.h",
         "src/MaaCore/Task/Infrast/InfrastClueRecipientTaskPlugin.cpp",
+        "src/MaaCore/Task/Infrast/InfrastReceptionTask.cpp",
+        "src/MaaCore/Task/Infrast/InfrastReceptionTask.h",
+        "src/MaaCore/Task/Interface/InfrastTask.cpp",
+        "resource/tasks/tasks.json",
         "unit_test/MaaCore/ClueRecipientTest.cpp"
       ]
     }

@@ -10,6 +10,86 @@
 
 namespace asst::infrast
 {
+class ClueRecipientRunState
+{
+public:
+    void begin_run(bool retrying) noexcept
+    {
+        if (!retrying) {
+            m_strategy = Strategy::Named;
+        }
+    }
+
+    void skip() noexcept { m_strategy = Strategy::Skip; }
+
+    void use_default() noexcept
+    {
+        if (can_send()) {
+            m_strategy = Strategy::Default;
+        }
+    }
+
+    bool can_send() const noexcept { return m_strategy != Strategy::Skip; }
+
+    bool is_using_default() const noexcept { return m_strategy == Strategy::Default; }
+
+private:
+    enum class Strategy
+    {
+        Named,
+        Default,
+        Skip,
+    };
+    Strategy m_strategy = Strategy::Named;
+};
+
+struct ClueRecipientPage
+{
+    enum class RowState
+    {
+        Empty,
+        Readable,
+        Unreadable,
+    };
+
+    std::array<std::string, 4> full_names;
+    std::array<std::string, 4> page_keys;
+    std::array<RowState, 4> states { RowState::Unreadable,
+                                     RowState::Unreadable,
+                                     RowState::Unreadable,
+                                     RowState::Unreadable };
+
+    bool has_empty_rows() const { return std::ranges::find(states, RowState::Empty) != states.end(); }
+
+    bool can_continue_search() const
+    {
+        bool empty_tail = false;
+        bool has_friend = false;
+        for (const auto state : states) {
+            if (state == RowState::Unreadable || (empty_tail && state == RowState::Readable)) {
+                return false;
+            }
+            empty_tail |= state == RowState::Empty;
+            has_friend |= state == RowState::Readable;
+        }
+        return has_friend;
+    }
+
+    bool operator==(const ClueRecipientPage&) const = default;
+};
+
+inline bool has_other_clue_recipient_nickname(std::string_view name, std::string_view recipient)
+{
+    const auto separator = name.rfind('#');
+    if (separator == std::string_view::npos || separator == 0) {
+        return false;
+    }
+    const auto nickname = name.substr(0, separator);
+    const auto expected = recipient.substr(0, recipient.rfind('#'));
+    // 仅用于排除目标；疑似截断或附带文字仍保留不确定性，不参与正向匹配。
+    return !nickname.starts_with(expected) && !expected.starts_with(nickname);
+}
+
 class ClueRecipientSearchAttempts
 {
 public:
@@ -60,6 +140,17 @@ inline bool is_valid_clue_recipient(std::string_view name)
     return separator != std::string_view::npos && separator > 0 && name.size() - separator == 5 &&
            std::ranges::none_of(name, [](unsigned char ch) { return ch < 32 || ch == 127; }) &&
            std::ranges::all_of(name.substr(separator + 1), [](char ch) { return ch >= '0' && ch <= '9'; });
+}
+
+inline bool can_exclude_clue_recipient(std::string_view name, std::string_view recipient)
+{
+    if (name == recipient || !is_valid_clue_recipient(recipient)) {
+        return false;
+    }
+    const auto nickname = name.substr(0, name.rfind('#'));
+    const auto expected = recipient.substr(0, recipient.rfind('#'));
+    return (nickname == expected && is_valid_clue_recipient(name)) ||
+           has_other_clue_recipient_nickname(name, recipient);
 }
 
 inline std::optional<size_t> find_clue_recipient(std::span<const std::string> names, std::string_view recipient)

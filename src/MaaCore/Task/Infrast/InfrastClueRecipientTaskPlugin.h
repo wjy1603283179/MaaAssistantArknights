@@ -24,7 +24,7 @@ public:
 private:
     virtual bool _run() override;
 
-    std::array<std::string, 4> read_names(const cv::Mat& image) const;
+    infrast::ClueRecipientPage read_names(const cv::Mat& image) const;
     bool on_recipient_not_found(ProcessTask& task);
 
     std::string m_recipient;

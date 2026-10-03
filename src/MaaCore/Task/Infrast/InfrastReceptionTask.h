@@ -1,4 +1,5 @@
 #pragma once
+#include "ClueRecipient.h"
 #include "InfrastProductionTask.h"
 
 namespace asst
@@ -46,7 +47,6 @@ private:
     bool m_enable_clue_exchange = true;
     bool m_send_clue = true;
     std::string m_clue_recipient;
-    bool m_clue_recipient_unavailable = false;
-    bool m_clue_recipient_fallback = false;
+    infrast::ClueRecipientRunState m_clue_recipient_state;
 };
 }

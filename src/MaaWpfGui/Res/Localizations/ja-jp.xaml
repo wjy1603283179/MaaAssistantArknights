@@ -176,7 +176,7 @@
     <system:String x:Key="ClueExchangeUnlocked">手がかり交換を開始しました</system:String>
     <system:String x:Key="InfrastReceptionSendClue">手がかりを贈る</system:String>
     <system:String x:Key="InfrastClueRecipient">手がかりの贈り先</system:String>
-    <system:String x:Key="InfrastClueRecipientTip" xml:space="preserve">ゲームに表示される完全な名前を入力してください（例：ドクター#1234）。&#10;空欄では標準の方法を使用します。指定した場合は、まずその戦友に1枚ずつ贈ります。&#10;一覧を最後まで探しても相手が見つからない状態が2回連続した場合、今回の任務は標準の方法に切り替わり、別の戦友への贈呈や一括贈呈を行うことがあります。&#10;保存した名前は消去せず、次の任務で再び探します。&#10;名前を認識できない、同じ名前が複数ある、または相手が受け取れない場合は、切り替えずに贈呈をスキップします。</system:String>
+    <system:String x:Key="InfrastClueRecipientTip" xml:space="preserve">ゲームに表示される完全な名前を入力してください（例：ドクター#1234）。&#10;空欄では標準の方法を使用します。指定した場合は、まずその戦友に1枚ずつ贈ります。&#10;一覧を最後まで探しても相手が見つからない状態が2回連続した場合、今回の任務は標準の方法に切り替わり、別の戦友への贈呈や一括贈呈を行うことがあります。&#10;保存した名前は消去せず、次の任務で再び探します。&#10;未発見で相手がいないと確実に判断できない、同じ名前が複数ある、または相手が受け取れない場合は、切り替えずに贈呈をスキップします。</system:String>
     <system:String x:Key="InfrastClueRecipientFormatError">贈り先の完全な名前（ニックネーム#4桁の番号）を入力してください（例：ドクター#1234）。</system:String>
     <system:String x:Key="ReceptionOptionsRequireInfrast">{key=Infrast} で以下の関数を設定して実行する必要があります</system:String>
     <system:String x:Key="ContinueTraining">訓練完了後に現在スキルの継続特化を試みます</system:String>

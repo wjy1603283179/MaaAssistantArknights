@@ -3,6 +3,7 @@
 #include "ClueRecipient.h"
 #include "Controller/Controller.h"
 #include "Utils/Logger.hpp"
+#include "Vision/Matcher.h"
 #include "Vision/OCRer.h"
 
 bool asst::InfrastClueRecipientTaskPlugin::verify(AsstMsg msg, const json::value& details) const
@@ -19,23 +20,36 @@ bool asst::InfrastClueRecipientTaskPlugin::verify(AsstMsg msg, const json::value
            (msg == AsstMsg::SubTaskStart && infrast::clue_recipient_send_row(task).has_value());
 }
 
-std::array<std::string, 4> asst::InfrastClueRecipientTaskPlugin::read_names(const cv::Mat& image) const
+asst::infrast::ClueRecipientPage asst::InfrastClueRecipientTaskPlugin::read_names(const cv::Mat& image) const
 {
-    std::array<std::string, 4> names;
-    const auto nickname = m_recipient.substr(0, m_recipient.rfind('#'));
-    for (size_t row = 0; row < names.size(); ++row) {
+    infrast::ClueRecipientPage page;
+    using RowState = infrast::ClueRecipientPage::RowState;
+    for (size_t row = 0; row < page.full_names.size(); ++row) {
         OCRer analyzer(image);
         analyzer.set_task_info("InfrastClueRecipientName" + std::to_string(row + 1));
         const auto results = analyzer.analyze();
         if (!results) {
+            // 无文字不等于空行；禁用与可用按钮的白色图标均可证明该行存在。
+            Matcher marker(image);
+            marker.set_task_info("InfrastClueRecipientRow" + std::to_string(row + 1));
+            if (!marker.analyze()) {
+                page.states[row] = RowState::Empty;
+            }
             continue;
         }
+        bool uncertain_candidate = false;
         for (const auto& result : *results) {
             if (result.score < 0.9) {
+                uncertain_candidate = true;
                 continue;
             }
             auto name = result.text;
-            if (name == nickname) {
+            if (name.size() == 5 && name.front() == '#' &&
+                std::ranges::all_of(name.substr(1), [](char ch) { return ch >= '0' && ch <= '9'; })) {
+                // 独立编号片段不能标识好友；完整姓名由昵称及相邻编号的校验产生。
+                continue;
+            }
+            if (!infrast::is_valid_clue_recipient(name) && name.find('#') == std::string::npos) {
                 // 昵称与编号可能被检测为分离文本；编号使用字符模型，避免名片背景干扰中文模型。
                 OCRer discriminator(image);
                 discriminator.set_task_info("InfrastClueRecipientDiscriminator");
@@ -48,17 +62,28 @@ std::array<std::string, 4> asst::InfrastClueRecipientTaskPlugin::read_names(cons
                     name += tag->front().text;
                 }
             }
-            if (!infrast::is_valid_clue_recipient(name)) {
+            const bool complete = infrast::is_valid_clue_recipient(name);
+            if (name != m_recipient && !infrast::can_exclude_clue_recipient(name, m_recipient)) {
+                uncertain_candidate = true;
                 continue;
             }
-            if (!names[row].empty() && names[row] != name) {
-                names[row].clear();
+            if (!page.page_keys[row].empty() && page.page_keys[row] != name) {
+                page.full_names[row].clear();
+                page.states[row] = RowState::Unreadable;
                 break;
             }
-            names[row] = std::move(name);
+            if (complete) {
+                page.full_names[row] = name;
+            }
+            page.page_keys[row] = std::move(name);
+            page.states[row] = RowState::Readable;
+        }
+        if (uncertain_candidate) {
+            page.full_names[row].clear();
+            page.states[row] = RowState::Unreadable;
         }
     }
-    return names;
+    return page;
 }
 
 bool asst::InfrastClueRecipientTaskPlugin::on_recipient_not_found(ProcessTask& task)
@@ -107,8 +132,8 @@ bool asst::InfrastClueRecipientTaskPlugin::_run()
         return true;
     }
 
-    const auto names = read_names(ctrler()->get_image());
-    const auto row = infrast::find_clue_recipient(names, m_recipient);
+    const auto page = read_names(ctrler()->get_image());
+    const auto row = infrast::find_clue_recipient(page.full_names, m_recipient);
     if (const auto send_row = infrast::clue_recipient_send_row(task_name)) {
         // 发送按钮匹配后再次读取姓名，避免翻页、重排或弹窗导致送给其他好友。
         if (!row || row != send_row) {
@@ -127,13 +152,16 @@ bool asst::InfrastClueRecipientTaskPlugin::_run()
         next = { "InfrastClueSendToRecipient" + std::to_string(*row + 1), "InfrastClueCloseRecipient" };
         LogInfo << __FUNCTION__ << "Clue recipient found:" << m_recipient << "row" << *row + 1;
     }
-    else if (std::ranges::all_of(names, &std::string::empty) || std::ranges::count(names, m_recipient) > 1) {
+    else if (
+        std::ranges::count(page.full_names, m_recipient) > 1 || !page.can_continue_search() ||
+        (page.has_empty_rows() && page != read_names(ctrler()->get_image()))) {
         next = { "InfrastClueCloseRecipient" };
         m_recipient_unavailable = true;
         LogWarn << __FUNCTION__ << "Clue recipient names are ambiguous or unreadable; skipping" << m_recipient;
     }
-    else if (!m_pages.visit(names)) {
-        next = { "InfrastClueRecipientNotFound" };
+    else if (!m_pages.visit(page.page_keys)) {
+        // 重复页可能来自翻页无进展或不完整编号碰撞，不能据此证明完整查找未命中。
+        next = { "InfrastClueCloseRecipient" };
     }
     return task->override_next("InfrastClueFindRecipient", std::move(next));
 }

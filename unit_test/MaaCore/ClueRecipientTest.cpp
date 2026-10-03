@@ -5,6 +5,108 @@
 
 #include "Task/Infrast/ClueRecipient.h"
 
+TEST_CASE("Unreadable target rows cannot count as a complete unsuccessful search", "[clue-recipient]")
+{
+    using asst::infrast::ClueRecipientPage;
+    using RowState = ClueRecipientPage::RowState;
+    ClueRecipientPage page;
+    page.full_names[1] = "Other#1234";
+    page.page_keys[1] = "Other#1234";
+    page.states = { RowState::Unreadable, RowState::Readable, RowState::Empty, RowState::Empty };
+    REQUIRE_FALSE(page.can_continue_search());
+    REQUIRE_FALSE(asst::infrast::find_clue_recipient(page.full_names, "Doctor#5678"));
+    asst::infrast::ClueRecipientSearchAttempts attempts;
+    for (int retry = 0; retry < 2; ++retry) {
+        if (page.can_continue_search()) {
+            attempts.record_not_found();
+        }
+    }
+    REQUIRE(attempts.not_found_count() == 0);
+}
+
+TEST_CASE("Only reliably different nicknames exclude an incomplete clue recipient", "[clue-recipient]")
+{
+    using asst::infrast::has_other_clue_recipient_nickname;
+    REQUIRE(has_other_clue_recipient_nickname("Other#12O", "DoctorLong#5678"));
+    REQUIRE_FALSE(has_other_clue_recipient_nickname("DoctorLong#567", "DoctorLong#5678"));
+    REQUIRE_FALSE(has_other_clue_recipient_nickname("Doctor#5678", "DoctorLong#5678"));
+    REQUIRE_FALSE(has_other_clue_recipient_nickname("DoctorLongk#5678", "DoctorLong#5678"));
+    REQUIRE_FALSE(has_other_clue_recipient_nickname("DoctorLong", "DoctorLong#5678"));
+    REQUIRE_FALSE(has_other_clue_recipient_nickname("#5678", "DoctorLong#5678"));
+}
+
+TEST_CASE("Complete discriminators distinguish friends with the same nickname", "[clue-recipient]")
+{
+    using asst::infrast::can_exclude_clue_recipient;
+    REQUIRE(can_exclude_clue_recipient("Doctor#4321", "Doctor#1234"));
+    REQUIRE_FALSE(can_exclude_clue_recipient("Doctor#1234", "Doctor#1234"));
+    REQUIRE_FALSE(can_exclude_clue_recipient("Doctor#123", "Doctor#1234"));
+    REQUIRE_FALSE(can_exclude_clue_recipient("Doctor#12O4", "Doctor#1234"));
+    REQUIRE_FALSE(can_exclude_clue_recipient("Doctor#1234", "DoctorLong#1234"));
+    REQUIRE_FALSE(can_exclude_clue_recipient("DoctorLongk#1234", "DoctorLong#1234"));
+    REQUIRE(can_exclude_clue_recipient("Other#12O", "Doctor#1234"));
+}
+
+TEST_CASE("Only stable empty tails allow clue recipient pagination", "[clue-recipient]")
+{
+    using asst::infrast::ClueRecipientPage;
+    using RowState = ClueRecipientPage::RowState;
+    ClueRecipientPage page;
+    page.page_keys[0] = "Other#12O";
+    page.states = { RowState::Readable, RowState::Empty, RowState::Empty, RowState::Empty };
+    REQUIRE(page.can_continue_search());
+    REQUIRE(page.has_empty_rows());
+    REQUIRE(page == ClueRecipientPage(page));
+    auto changed = page;
+    changed.states[1] = RowState::Unreadable;
+    REQUIRE_FALSE(page == changed);
+    REQUIRE_FALSE(changed.can_continue_search());
+    page.states[2] = RowState::Readable;
+    REQUIRE_FALSE(page.can_continue_search());
+    REQUIRE_FALSE(ClueRecipientPage().can_continue_search());
+    page.states.fill(RowState::Empty);
+    REQUIRE_FALSE(page.can_continue_search());
+}
+
+TEST_CASE("A complete unique clue recipient can be found despite unrelated unreadable rows", "[clue-recipient]")
+{
+    asst::infrast::ClueRecipientPage page;
+    page.full_names[0] = "Doctor#5678";
+    page.states[0] = asst::infrast::ClueRecipientPage::RowState::Readable;
+    REQUIRE(asst::infrast::find_clue_recipient(page.full_names, "Doctor#5678") == 0);
+    REQUIRE_FALSE(page.can_continue_search());
+    page.full_names[2] = "Doctor#5678";
+    REQUIRE_FALSE(asst::infrast::find_clue_recipient(page.full_names, "Doctor#5678"));
+}
+
+TEST_CASE("Skipping clue gifts survives a Reception retry but not a new task", "[clue-recipient]")
+{
+    asst::infrast::ClueRecipientRunState state;
+    state.begin_run(false);
+    REQUIRE(state.can_send());
+    state.skip();
+    state.begin_run(true);
+    REQUIRE_FALSE(state.can_send());
+    state.use_default();
+    REQUIRE_FALSE(state.can_send());
+    REQUIRE_FALSE(state.is_using_default());
+    state.begin_run(false);
+    REQUIRE(state.can_send());
+    REQUIRE_FALSE(state.is_using_default());
+}
+
+TEST_CASE("The default clue strategy survives a Reception retry but not a new task", "[clue-recipient]")
+{
+    asst::infrast::ClueRecipientRunState state;
+    state.use_default();
+    state.begin_run(true);
+    REQUIRE(state.can_send());
+    REQUIRE(state.is_using_default());
+    state.begin_run(false);
+    REQUIRE(state.can_send());
+    REQUIRE_FALSE(state.is_using_default());
+}
+
 TEST_CASE("Clue recipients use the default strategy only after two failed searches", "[clue-recipient]")
 {
     asst::infrast::ClueRecipientSearchAttempts attempts;
